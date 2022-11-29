@@ -33,3 +33,9 @@ class Contributor(models.Model):
         ('CONTRIBUTOR', 'CONTRIBUTOR')
     ]
     role = models.CharField(max_length=11, choices=ROLES, default='CONTRIBUTOR')
+
+class Issue(models.Model):
+    pass
+
+class Comment(models.Model):
+    pass

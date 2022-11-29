@@ -1,11 +1,10 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from softdesk_api.permissions import check_credentials, check_session
-from .serializers import UserSerializer, ProjectSerializer, ContributorSerializer
-from .models import User, Contributor, Project
-import json
-import jwt, datetime
+from rest_framework.permissions import IsAuthenticated
+from softdesk_api.permissions import *
+from .serializers import *
+from .models import *
 
 class SignupView(APIView):
     def post(self, request):
@@ -14,42 +13,39 @@ class SignupView(APIView):
         serializer.save()
         return Response(serializer.data)
 
-class LoginView(APIView):
-    def post(self, request):
-        email = request.data['email']
-        password = request.data['password']
-        user = User.objects.filter(email=email).first()
-        check_credentials(self, user, password)
-        payload = {
-            'id': user.id,
-            'expiration_date': str(datetime.datetime.utcnow() + datetime.timedelta(minutes=30)),
-            'creation_date': str(datetime.datetime.utcnow())
-        }
-        token = jwt.encode(payload, 'secret', algorithm='HS256')
-        response = Response()
-        response.set_cookie(key='jwt', value=token, httponly=True)
-
-        response.data = {
-            'jwt': token
-        }
-        return response
-
-# Here create LogoutView
-
 class ProjectsView(APIView):
+    permission_classes = (IsAuthenticated,)
     def post(self, request):
-        payload = check_session(self, request)
-        user = User.objects.filter(id=payload['id']).first()
-        request.data['author'] = user.id
+        request.data['author'] = request.user.id
         serializer = ProjectSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         project = serializer.save()
-        Contributor.objects.create(user=user, project=project, role='AUTHOR')
+        Contributor.objects.create(user=request.user, project=project, role='AUTHOR')
         return Response(serializer.data)
 
     def get(self, request):
-        payload = check_session(self, request)
-        user = User.objects.filter(id=payload['id']).first()
-        projects = Project.objects.filter(contributor__user=user)
+        projects = Project.objects.filter(contributor__user=request.user)
         serializer = ProjectSerializer(projects, many=True)
         return Response(serializer.data)
+
+class ProjectDetailsView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def get(self, request, id):
+        project = Project.objects.get(id=id)
+        serializer = ProjectSerializer(project)
+        return Response(serializer.data)
+
+    def put(self, request, id):
+        project = Project.objects.get(id=id)
+        request.data['author'] = project.author.id
+        serializer = ProjectSerializer(project, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        project = serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, id):
+        project = Project.objects.get(id=id)
+        project.delete()
+        return Response('Project deleted')
+
+
