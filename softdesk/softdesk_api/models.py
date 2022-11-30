@@ -32,10 +32,38 @@ class Contributor(models.Model):
         ('AUTHOR', 'AUTHOR'),
         ('CONTRIBUTOR', 'CONTRIBUTOR')
     ]
-    role = models.CharField(max_length=11, choices=ROLES, default='CONTRIBUTOR')
+    role = models.CharField(choices=ROLES, max_length=11)
 
 class Issue(models.Model):
-    pass
+    title = models.CharField(max_length=255)
+    description = models.TextField(max_length=2048)
+    TAGS =  [
+        ('BUG', 'BUG'),
+        ('TASK', 'TASK'),
+        ('IMPROVMENT', 'IMPROVMENT')
+    ]
+    tag = models.CharField(choices=TAGS, max_length=10)
+    PRIORITIES = [
+        ('HIGH', 'HIGH'),
+        ('MEDIUM', 'MEDIUM'),
+        ('LOW', 'LOW')
+    ]
+    priority = models.CharField(choices=PRIORITIES, max_length=6)
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
+    STATUSES = [
+        ('TODO', 'TODO'),
+        ('INPROGRESS', 'INPROGRESS'),
+        ('DONE', 'DONE')
+    ]
+    status = models.CharField(choices=STATUSES, max_length=10)
+    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    assigned_user = models.ForeignKey(to=Contributor, on_delete=models.CASCADE)
+    created_time = models.DateTimeField(auto_now_add=True)
 
 class Comment(models.Model):
-    pass
+    description = models.TextField(max_length=2048)
+    author = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE)
+    created_time = models.DateTimeField(auto_now_add=True)
+
+
