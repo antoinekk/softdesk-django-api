@@ -159,6 +159,7 @@ class CommentView(APIView):
         return Response(serializer.data)
 
     def get(self, request, project_id, issue_id):
+        project = Project.objects.get(id=project_id)
         issue = Issue.objects.get(project=project, id=issue_id)
         comments = Comment.objects.filter(issue=issue)
         serializer = CommentSerializer(comments, many=True)
