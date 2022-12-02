@@ -12,7 +12,7 @@ Clone the repository
 git clone https://github.com/antoinekk/softdesk-django-api.git <your path>
 ```
 
-Create and activate the virtual environement
+Create and activate the virtual environment
 
 ```
 cd softdesk-django-api
