@@ -17,7 +17,7 @@ Create and activate the virtual environment
 ```
 cd softdesk-django-api
 python -m venv env
-source env\bin\activate
+source env/bin/activate
 ```
 
 Install python modules provided in the "requirements.txt" file by using your terminal
